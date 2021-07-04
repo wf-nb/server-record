@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Server Record</title>
+    <!-- Other -->
+    <script src="../src/jquery.min.js"></script>
+    <link rel="stylesheet" href="../src/style.css">
+    <!-- semantic -->
+    <script src="../src/dist/semantic.min.js"></script>
+    <link rel="stylesheet" href="../src/dist/semantic.min.css">
+</head>
+<body>
+    
+    <div class="re-header">
+        <left>
+            <i class="server icon"></i>
+            <span>Server Record</span>
+        </left>
+        <right>
+            <div class="ui search" id="searchserver">
+                <div class="ui icon input">
+                    <input id="search-input" class="prompt" type="text" placeholder="搜尋伺服器">
+                    <i class="search icon"></i>
+                </div>
+                <div class="results"></div>
+            </div>
+        </right>
+    </div>
+
+    <div class="cardlist" id="cardlist"></div>
+
+    <div class="ui modal" id="info">
+        <i class="close icon"></i>
+        <div class="header" id="server_name"></div>
+        <div class="image content">
+            <span class="block"><b>伺服器IP: </b><copy id="server_ip"></copy></span>
+            <span class="block"><b>伺服器密碼/秘鑰: </b><copy id="server_pass"></copy></span>
+            <span class="block"><b>伺服器訊息: </b><copy id="server_info"></copy></span>
+        </div>
+        <div class="actions">
+            <div class="ui black deny button">返回</div>
+            <div class="ui positive right labeled icon button" onclick="conn()">
+                快速連接
+                <i class="checkmark icon"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="ui modal" id="add">
+        <i class="close icon"></i>
+        <div class="header">新增伺服器</div>
+        <div class="image content">
+            <div class="add ui form">
+                <div class="field">
+                    <label>伺服器名稱</label>
+                    <input type="text" id="add_servername" placeholder="Server Name">
+                </div>
+                <div class="field">
+                    <label>伺服器IP</label>
+                    <input type="text" id="add_serverip" placeholder="Server IP">
+                </div>
+                <div class="field">
+                    <label>伺服器密碼/秘鑰</label>
+                    <input type="text" id="add_serverpassword" placeholder="Server Password">
+                </div>
+                <div class="field">
+                    <label>伺服器訊息</label>
+                    <input type="text" id="add_serverinfo" placeholder="Server Info">
+                </div>
+                <button class="ui button" onclick="addserver()">提交</button>
+            </div>
+        </div>
+        <div class="actions">
+            <div class="ui black deny button">返回</div>
+        </div>
+    </div>
+    
+    <script>
+        var searchList = []
+        load()
+
+        function load(){
+            searchList = []
+            let cardlist = document.getElementById('cardlist');
+            cardlist.innerHTML = `<div class="ui card sd" onclick="javascript:$('#add').modal('show');">
+                <div class="content" style="text-align: center;">
+                    <i class="add icon"></i>
+                </div>
+            </div>`
+            $.ajax({
+                url: "http://127.0.0.1:18089/api",
+                type: "POST",
+                data: {"module":"list"},
+                success: function(re){
+                    for (var i=0;i<re.length;i++){
+                        cardlist.innerHTML = cardlist.innerHTML + `<div onclick="openinfo(this)" class="ui card sd" id="`+re[i]['server_name']+`">
+                            <div class="content">
+                                <div class="header">`+re[i]['server_name']+`</div>
+                                <div class="meta">
+                                    <span class="date">`+re[i]['server_ip']+`</span>
+                                </div>
+                                <div class="description">`+re[i]['server_info']+`</div>
+                                <span style="display:none;">`+re[i]['server_pass']+`</span>
+                            </div>
+                        </div>`;
+                        searchList.push({title: re[i]['server_name']})
+                    }
+                }
+            })
+            setTimeout(function(){
+                $('#searchserver').search({
+                    source: searchList
+                });
+            }, 100)
+        }
+        function openinfo(e){
+            let ee = e.children[0];
+            document.getElementById("server_name").innerHTML = ee.children[0].innerHTML;
+            document.getElementById("server_pass").innerHTML = ee.children[3].innerHTML;
+            document.getElementById("server_ip").innerHTML = ee.children[1].children[0].innerHTML;
+            document.getElementById("server_info").innerHTML = ee.children[2].innerHTML;
+            $('#info').modal('show')
+        }
+        function addserver(){
+            let name = document.getElementById('add_servername').value;
+            let ip = document.getElementById('add_serverip').value;
+            let pass = document.getElementById('add_serverpassword').value;
+            let info = document.getElementById('add_serverinfo').value;
+            $.ajax({
+                url: "http://127.0.0.1:18089/api",
+                type: "POST",
+                data: {"module":"add", "server_name":name, "server_pass":pass, "server_info": info, "server_ip": ip},
+                success: function(re){
+                    if (re['status'] == "add_ok"){
+                        $("#add").modal('hide')
+                    }
+                    load()
+                }
+            })
+        }
+        function conn(){
+            let ip = document.getElementById('server_ip').innerHTML;
+            let pass = document.getElementById('server_pass').innerHTML;
+            $.ajax({
+                url: "http://127.0.0.1:18089/api",
+                type: "POST",
+                data: {"module":"shell", "ip":ip, "pass":pass},
+                success: function(re){
+                    if (re['status'] == "add_ok"){
+                        $("#add").modal('hide')
+                    }
+                    load()
+                }
+            })
+        }
+        $('#search-input').bind('keyup', function(event) {
+            if (event.keyCode == "13") {
+                console.log("To "+this.value)
+                $('body').animate({scrollTop: $('#'+this.value).offset().top }, 500);
+            }
+        });
+    </script>
+
+</body>
+</html>

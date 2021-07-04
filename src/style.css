@@ -1,0 +1,59 @@
+html, body {
+    user-select:none;
+}
+p, span, div{
+    user-select:none;
+}
+::-webkit-scrollbar {
+    display: none;
+}
+@font-face {
+    font-family: scjk;
+    src: url(../src/NotoSansCJK-Medium.otf);
+}
+span, p, h3{
+    font-family: scjk;
+}
+body {
+    padding-top: 50px !important;
+}
+.re-header {
+    position: fixed;
+    height: 50px;
+    width: 100%;
+    top: 0;
+    left: 0;
+    background-color: white;
+    line-height: 50px;
+    z-index: 999;
+}
+.re-header left {
+    margin-left: 15px;
+}
+.re-header left span {
+    margin-left: 10px;
+    font-size: 125%;
+    font-weight: 700;
+}
+.cardlist .card{
+    width: 90% !important;
+    margin-left: 5% !important;
+    margin-top: 1% !important;
+}
+.sd{
+    cursor: pointer;
+}
+copy {
+    user-select: text;
+}
+.block{
+    display: block;
+    width: 100%;
+}
+right{
+    float: right;
+    margin-right: 5px;
+}
+.add{
+    margin: 7.5px;
+}
